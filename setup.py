@@ -24,34 +24,39 @@ else:
 # -------------------------------------------------
 cxx_flags = []
 nvcc_flags = []
+suppress_some_nvcc_warnings = "-diag-suppress=3189,2809,221"
 
 if IS_WINDOWS:
     # Required for MSVC + nvcc + torch headers
     cxx_flags += [
         "/O2",
-        "/std:c++17",
+        "/std:c++20",
         "/EHsc", 
         "/permissive-", 
         "/Zc:__cplusplus"
     ]
     nvcc_flags += [
         "-O3",
-        "-std=c++17",
+        "-std=c++20",
         "--expt-relaxed-constexpr",
         "--extended-lambda",
-        "-Xcompiler=/std:c++17",
+        "-Xcompiler=/std:c++20",
         "-Xcompiler=/EHsc", 
         "-Xcompiler=/permissive-", 
-        "-Xcompiler=/Zc:__cplusplus"
+        "-Xcompiler=/Zc:__cplusplus",
+        "-Xcompiler",
+        "/Zc:preprocessor",
+        suppress_some_nvcc_warnings
     ]
 else:
     cxx_flags += [
         "-O3", 
-        "-std=c++17"
+        "-std=c++20"
     ]    
     nvcc_flags += [
         "-O3",
-        "-std=c++17"
+        "-std=c++20",
+        suppress_some_nvcc_warnings
     ]
 
 # -------------------------------------------------
