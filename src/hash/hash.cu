@@ -5,6 +5,7 @@
 
 #include "api.h"
 #include "hash.cuh"
+#include "../utils.h"
 
 
 template<typename K, typename V>
@@ -33,6 +34,8 @@ static void dispatch_hashmap_insert_cuda(
     const torch::Tensor& keys,
     const torch::Tensor& values
 ) {
+    // Zero blocks is an invalid launch (cudaErrorInvalidValue), left pending for a later, unrelated CUDA call to raise.
+    if (keys.size(0) == 0) return;
     cudaStream_t stream = at::cuda::getCurrentCUDAStream().stream();
     hashmap_insert_cuda_kernel<<<
         (keys.size(0) + BLOCK_SIZE - 1) / BLOCK_SIZE,
@@ -47,6 +50,7 @@ static void dispatch_hashmap_insert_cuda(
         keys.data_ptr<K>(),
         values.data_ptr<V>()
     );
+    CUDA_CHECK(cudaGetLastError());
 }
 
 
@@ -115,6 +119,8 @@ static void dispatch_hashmap_lookup_cuda(
     const torch::Tensor& keys,
     torch::Tensor& values
 ) {
+    // Zero blocks is an invalid launch (cudaErrorInvalidValue), left pending for a later, unrelated CUDA call to raise.
+    if (keys.size(0) == 0) return;
     cudaStream_t stream = at::cuda::getCurrentCUDAStream().stream();
     hashmap_lookup_cuda_kernel<<<
         (keys.size(0) + BLOCK_SIZE - 1) / BLOCK_SIZE,
@@ -129,6 +135,7 @@ static void dispatch_hashmap_lookup_cuda(
         keys.data_ptr<K>(),
         values.data_ptr<V>()
     );
+    CUDA_CHECK(cudaGetLastError());
 }
 
 
@@ -212,6 +219,8 @@ static void dispatch_hashmap_insert_3d_cuda(
     const torch::Tensor& values,
     int W, int H, int D
 ) {
+    // Zero blocks is an invalid launch (cudaErrorInvalidValue), left pending for a later, unrelated CUDA call to raise.
+    if (coords.size(0) == 0) return;
     cudaStream_t stream = at::cuda::getCurrentCUDAStream().stream();
     hashmap_insert_3d_cuda_kernel<<<
         (coords.size(0) + BLOCK_SIZE - 1) / BLOCK_SIZE,
@@ -227,6 +236,7 @@ static void dispatch_hashmap_insert_3d_cuda(
         coords.data_ptr<int32_t>(),
         values.data_ptr<V>()
     );
+    CUDA_CHECK(cudaGetLastError());
 }
 
 
@@ -313,6 +323,8 @@ static void dispatch_hashmap_lookup_3d_cuda(
     torch::Tensor& values,
     int W, int H, int D
 ) {
+    // Zero blocks is an invalid launch (cudaErrorInvalidValue), left pending for a later, unrelated CUDA call to raise.
+    if (coords.size(0) == 0) return;
     cudaStream_t stream = at::cuda::getCurrentCUDAStream().stream();
     hashmap_lookup_3d_cuda_kernel<<<
         (coords.size(0) + BLOCK_SIZE - 1) / BLOCK_SIZE,
@@ -328,6 +340,7 @@ static void dispatch_hashmap_lookup_3d_cuda(
         coords.data_ptr<int32_t>(),
         values.data_ptr<V>()
     );
+    CUDA_CHECK(cudaGetLastError());
 }
 
 
@@ -408,6 +421,8 @@ static void dispatch_hashmap_insert_3d_idx_as_val_cuda(
     const torch::Tensor& coords,
     int W, int H, int D
 ) {
+    // Zero blocks is an invalid launch (cudaErrorInvalidValue), left pending for a later, unrelated CUDA call to raise.
+    if (coords.size(0) == 0) return;
     cudaStream_t stream = at::cuda::getCurrentCUDAStream().stream();
     hashmap_insert_3d_idx_as_val_cuda_kernel<<<
         (coords.size(0) + BLOCK_SIZE - 1) / BLOCK_SIZE,
@@ -422,6 +437,7 @@ static void dispatch_hashmap_insert_3d_idx_as_val_cuda(
         hashmap_values.data_ptr<V>(),
         coords.data_ptr<int32_t>()
     );
+    CUDA_CHECK(cudaGetLastError());
 }
 
 

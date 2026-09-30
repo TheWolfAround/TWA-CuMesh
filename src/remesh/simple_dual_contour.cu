@@ -187,6 +187,11 @@ std::tuple<torch::Tensor, torch::Tensor> cumesh::simple_dual_contour(
     auto vertices = torch::empty({(long)M, 3}, torch::dtype(torch::kFloat32).device(coords.device()));
     auto intersected = torch::empty({(long)M, 3}, torch::dtype(torch::kInt32).device(coords.device()));
 
+    // Handle empty input - return early to avoid launching kernels with 0 blocks
+    if (M == 0) {
+        return std::make_tuple(vertices, intersected);
+    }
+
     dim3 threads(BLOCK_SIZE);
     dim3 blocks((M + BLOCK_SIZE - 1) / BLOCK_SIZE);
 
