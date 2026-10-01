@@ -490,6 +490,9 @@ void collapse_edges(
     CUDA_CHECK(cudaMemcpyAsync(&new_num_vertices, ctx.vertices_map.ptr + V, sizeof(int), cudaMemcpyDeviceToHost, stream));
     CUDA_CHECK(cudaStreamSynchronize(stream));
     // compress vertices
+    // temp_storage still holds the QEMs, sized for the old mesh; free it so the compressed buffers swapped into the mesh are
+    // allocated at their exact size, instead of the mesh carrying this step's scratch capacity into the next one
+    ctx.temp_storage.free();
     ctx.temp_storage.resize(new_num_vertices * sizeof(float3));
     compress_vertices_kernel<<<(V+BLOCK_SIZE-1)/BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(
         ctx.vertices_map.ptr,
@@ -499,6 +502,7 @@ void collapse_edges(
     );
     CUDA_CHECK(cudaGetLastError());
     swap_buffers(ctx.temp_storage, ctx.vertices);
+    ctx.temp_storage.free();
 
     // update faces buffer
     // get faces map
@@ -525,6 +529,7 @@ void collapse_edges(
     );
     CUDA_CHECK(cudaGetLastError());
     swap_buffers(ctx.temp_storage, ctx.faces);
+    ctx.temp_storage.free();
 }
 
 

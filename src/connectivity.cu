@@ -163,6 +163,9 @@ void CuMesh::get_edges() {
     CUDA_CHECK(cudaStreamSynchronize(stream));
     this->edge2face_cnt.size = this->edges.size;
     CUDA_CHECK(cudaFree(num_edges));
+    // The radix sort's scratch is about as large as the keys themselves; nothing after it needs that much, so give it back
+    // now rather than holding it until the cache is cleared
+    this->cub_temp_storage.free();
 }
 
 
